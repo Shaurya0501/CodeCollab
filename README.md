@@ -2,7 +2,6 @@
 
 A real-time collaborative code editor built with React, Node.js, and Socket.io — containerized with Docker and deployed on AWS ECS.
 
-> Built as part of a full-length workshop by [Sheryians Coding School](https://github.com/ankurdotio/docker-aws), covering everything from local development to production deployment.
 
 ---
 
@@ -106,8 +105,3 @@ aws ecr get-login-password --region <region> | \
 docker tag codecollab:latest <ecr-repo-uri>:latest
 docker push <ecr-repo-uri>:latest
 ```
-
-After pushing, create an ECS task definition pointing to the ECR image and deploy it as a service. Full walkthrough is covered in the video starting at `01:48:32`.
-
-
-MIT
