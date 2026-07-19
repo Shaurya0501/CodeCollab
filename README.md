@@ -1,200 +1,113 @@
-# Docker + AWS ECS Deployment
+# CodeCollab
 
-A production-ready full-stack deployment project demonstrating how to containerize and deploy a real-world application using **Docker**, **Amazon ECR**, and **Amazon ECS**. This project walks through the complete deployment workflow—from creating Docker images to hosting scalable containers on AWS.
+A real-time collaborative code editor built with React, Node.js, and Socket.io — containerized with Docker and deployed on AWS ECS.
 
-## 🚀 Overview
-
-This project demonstrates how modern applications are built, containerized, and deployed in production using Docker and AWS.
-
-The deployment follows a real-world workflow:
-
-- Develop a full-stack application
-- Containerize the application using Docker
-- Build optimized Docker images
-- Push images to Amazon Elastic Container Registry (ECR)
-- Deploy containers on Amazon Elastic Container Service (ECS)
-- Run scalable services in the cloud
+> Built as part of a full-length workshop by [Sheryians Coding School](https://github.com/ankurdotio/docker-aws), covering everything from local development to production deployment.
 
 ---
 
-## ✨ Features
+## What It Does
 
-- Dockerized full-stack application
-- Multi-stage Docker build for optimized image size
-- Container deployment using Amazon ECS (Fargate)
-- Image storage using Amazon ECR
-- Production deployment workflow
-- Scalable container architecture
-- Real-time communication support with Socket.io
-- Collaborative editing using Monaco Editor & Yjs
+CodeCollab lets multiple users edit code together in real time inside a shared room. Changes sync instantly across all connected clients using WebSockets and Yjs (a CRDT library for conflict-free collaborative editing). The app runs behind a single domain — frontend and backend served together — and scales horizontally via Docker containers on AWS.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
-### Frontend
-- React.js
-- Monaco Editor
-- Yjs
-
-### Backend
-- Node.js
-- Express.js
-
-### Real-Time Communication
-- Socket.io (WebSockets)
-
-### Containerization
-- Docker
-- Docker Compose
-
-### Cloud
-- Amazon ECR
-- Amazon ECS (Fargate)
-
-### Architecture
-- Microservices
-- Scalable System Design
+| Layer | Technology |
+|---|---|
+| Frontend | React.js + Monaco Editor |
+| Backend | Node.js + Express.js |
+| Real-Time Sync | Socket.io (WebSockets) + Yjs |
+| Containerization | Docker (multi-stage builds) |
+| Container Registry | AWS ECR |
+| Deployment | AWS ECS (Elastic Container Service) |
 
 ---
 
-## 📁 Project Structure
+## Getting Started
 
-```text
-.
-├── client/
-│   ├── src/
-│   ├── public/
-│   └── Dockerfile
-│
-├── server/
-│   ├── routes/
-│   ├── controllers/
-│   ├── package.json
-│   └── Dockerfile
-│
-├── docker-compose.yml
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v18+
+- [Docker](https://docs.docker.com/get-docker/) installed and running
+
+### Run Locally (Without Docker)
+
+```bash
+# Clone the repo
+git clone https://github.com/ankurdotio/docker-aws
+cd docker-aws
+
+# Install and start the backend
+cd server
+npm install
+npm run dev
+
+# In a separate terminal, install and start the frontend
+cd ../client
+npm install
+npm run dev
+```
+
+### Run With Docker
+
+```bash
+# Build the Docker image
+docker build -t codecollab .
+
+# Run the container
+docker run -p 3000:3000 codecollab
+```
+
+The app will be available at `http://localhost:3000`.
+
+---
+
+## Project Structure
+
+```
+docker-aws/
+├── client/          # React frontend with Monaco Editor
+│   └── src/
+├── server/          # Node.js + Express + Socket.io backend
+│   └── index.js
+├── Dockerfile       # Multi-stage build for production
 └── README.md
 ```
 
 ---
 
-## 🐳 Docker Workflow
+## How Collaboration Works
 
-### Build Docker Image
-
-```bash
-docker build -t server .
-```
-
-### Run Container
-
-```bash
-docker run -p 4000:3000 server
-```
-
-### View Running Containers
-
-```bash
-docker ps
-```
-
-### Stop Container
-
-```bash
-docker stop <container_id>
-```
+1. A user opens the app and joins (or creates) a room.
+2. The frontend connects to the backend over a WebSocket.
+3. Keystrokes are encoded as Yjs operations and broadcast to all peers in the room.
+4. Each client merges incoming operations using Yjs's CRDT algorithm — no conflicts, no overwrites.
+5. A live presence list shows who else is in the room.
 
 ---
 
-## ☁ AWS Deployment Workflow
+## Docker & Deployment
 
-### 1. Install AWS CLI
+This project uses a **multi-stage Dockerfile** to keep the production image lean:
 
-Configure AWS credentials:
+- **Stage 1 (build):** installs dependencies and compiles the React app.
+- **Stage 2 (serve):** copies only the build output and production server code into a minimal Node image.
 
-```bash
-aws configure
-```
-
----
-
-### 2. Login to Amazon ECR
+### Deploy to AWS
 
 ```bash
-aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
+# Authenticate Docker with ECR
+aws ecr get-login-password --region <region> | \
+  docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
+
+# Tag and push
+docker tag codecollab:latest <ecr-repo-uri>:latest
+docker push <ecr-repo-uri>:latest
 ```
 
----
-
-### 3. Build Docker Image
-
-```bash
-docker build -t server .
-```
-
----
-
-### 4. Tag Image
-
-```bash
-docker tag server:latest <account-id>.dkr.ecr.<region>.amazonaws.com/<repository>:latest
-```
-
----
-
-### 5. Push Image
-
-```bash
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/<repository>:latest
-```
-
----
-
-### 6. Deploy to ECS
-
-- Create ECS Cluster
-- Create Task Definition
-- Create ECS Service
-- Run the container using AWS Fargate
-- Access the deployed application
-
----
-
-### Docker
-
-- Docker Fundamentals
-- Containers vs Virtual Machines
-- Docker Images
-- Dockerfile
-- Docker Build
-- Docker Run
-- Docker Networking
-- Multi-stage Builds
-- Docker Compose
-
-### AWS
-
-- AWS CLI
-- Amazon ECR
-- Amazon ECS
-- ECS Task Definitions
-- ECS Services
-- ECS Clusters
-- IAM Roles
-- Cloud Deployment
-
-### System Design
-
-- Containerized Applications
-- Scalable Architecture
-- Real-Time Communication
-- Production Deployment
-- Microservices
+After pushing, create an ECS task definition pointing to the ECR image and deploy it as a service. Full walkthrough is covered in the video starting at `01:48:32`.
 
 
-
-
-
-
-## ⭐ If you found this project helpful, consider giving it a star!
+MIT
